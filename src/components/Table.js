@@ -59,7 +59,7 @@ const CompleteTable = (props) => {
         cover: item.basic_information.thumb,
         name: item.basic_information.title,
         artist: artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist,
-        year: item.basic_information.year,
+        year: item.notes ? item.notes[1]?.value : '',
         date: item.notes ? item.notes[0].value : '',
         formats: item.basic_information.formats,
       });
