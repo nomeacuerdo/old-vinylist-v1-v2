@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Typography, Box } from '@material-ui/core';
+
 import Yo from './assets/nomeacuerdo.png';
 import Table from './components/Table';
 
@@ -18,7 +20,7 @@ const App = () => {
   const fetchData = async (url) => axios.get(url, {
     headers: {
       Authorization: 'Discogs key=PjNgHzSjSNIULkrCsSmT, secret=zwvQZAPKYBJmNfJxzxtlUfWIbTblEkAf, token=uuIWTZNgdYAOOFhQJRokeWBrTcDsrQYMHwaPJRov',
-      'user-agent': 'Spart/0.1 +https://github.com/nomeacuerdo/spart',
+      'user-agent': 'Vinylist/0.1 +https://github.com/nomeacuerdo/vinylist',
     },
     // eslint-disable-next-line
   }).catch((e) => console.log(e));
@@ -51,7 +53,7 @@ const App = () => {
   // }, []);
 
   useEffect(async () => {
-    const { data } = await fetchData('https://api.discogs.com/users/no-me-acuerdo/collection/folders/0/releases');
+    const { data } = await fetchData('https://api.discogs.com/users/no-me-acuerdo/collection/folders/0/releases?per_page=100');
 
     tempArray.push(...data.releases);
 
@@ -64,11 +66,13 @@ const App = () => {
     <Container>
       <Sidebar>
         <Logo src={Yo} alt="nomeacuerdo" />
+        <Box bottom={0} position="fixed">
+          <Typography>
+            {`${collection.length} items`}
+          </Typography>
+        </Box>
       </Sidebar>
       <RecordList>
-        <strong>
-          {`${collection.length} items`}
-        </strong>
         <Table
           loadMore={loadMore}
           collection={collection}

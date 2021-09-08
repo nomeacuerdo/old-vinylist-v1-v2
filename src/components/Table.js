@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import {
-  Button,
-  Typography,
   TableContainer,
   Table,
   TableBody,
   TableRow,
   TableCell,
   Checkbox,
+  CircularProgress,
 } from '@material-ui/core';
 
 import { Cover } from '../styles';
@@ -38,18 +37,31 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const CompleteTable = (props) => {
-  const { loadMore, collection, pagination } = props;
+  const { collection } = props;
 
   const classes = useStyles();
   const [selected, setSelected] = useState([]);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('artist');
 
+  const sanitizeArtist = (artist, albumTitle) => {
+    const notTheThe = artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist;
+    const noVarious = notTheThe.startsWith('Various') ? `${albumTitle} [Various]` : notTheThe;
+    const TheSpecificEvangelionSituation = albumTitle.startsWith('Evangelion Finally') ? 'Evangelion' : noVarious;
+    const SameWithCowboyBebop = albumTitle.startsWith('Cowboy Bebop') ? 'Cowboy Bebop' : TheSpecificEvangelionSituation;
+    const andGuachimanes = albumTitle.startsWith('Watchmen') ? 'Watchmen' : SameWithCowboyBebop;
+    const TylerDurden = albumTitle.startsWith('Fight Club') ? 'Fight Club' : andGuachimanes;
+    const JarvisPepito = TylerDurden.startsWith('JARV IS') ? 'Jarvis Cocker' : TylerDurden;
+
+    return JarvisPepito;
+  };
+
   const rows = collection.length > 0
     ? collection.map((item) => {
       const artist = item.basic_information.artists.length > 1
         ? item.basic_information.artists.reduce((sum, itm) => {
-          const normalizedName = itm.name.startsWith('The ') ? `${itm.name.substring(3)} [The]` : itm.name;
+          const aitem = itm.anv !== '' ? itm.anv : itm.name;
+          const normalizedName = sanitizeArtist(aitem, item.basic_information.title);
           return `${sum} ${normalizedName} ${itm.join}`;
         }, '').trim()
         : item.basic_information.artists[0].name;
@@ -58,7 +70,7 @@ const CompleteTable = (props) => {
         id: item.id,
         cover: item.basic_information.thumb,
         name: item.basic_information.title,
-        artist: artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist,
+        artist: sanitizeArtist(artist, item.basic_information.title),
         year: item.notes ? item.notes[1]?.value : '',
         date: item.notes ? item.notes[0].value : '',
         formats: item.basic_information.formats,
@@ -178,6 +190,17 @@ const CompleteTable = (props) => {
         <TableBody>
           { /* stableSort(rows, getComparator(order, orderBy)) */ }
           {
+            rows.length === 0
+              ? (
+                <TableRow>
+                  <TableCell align="center" colSpan={6}>
+                    <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              )
+              : null
+          }
+          {
           stupidDoubleSort(rows)
             .map((row, index) => {
               const isItemSelected = isSelected(row.id);
@@ -223,6 +246,7 @@ const CompleteTable = (props) => {
           )}
           <TableRow>
             {
+              /*
               (pagination.pages > 1 && pagination.pages > pagination.page)
                 ? (
                   <TableCell colSpan={6}>
@@ -238,6 +262,7 @@ const CompleteTable = (props) => {
                     </Typography>
                   </TableCell>
                 )
+                */
             }
           </TableRow>
         </TableBody>
@@ -247,9 +272,7 @@ const CompleteTable = (props) => {
 };
 
 CompleteTable.propTypes = {
-  loadMore: PropTypes.func.isRequired,
   collection: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  pagination: PropTypes.shape().isRequired,
 };
 
 export default CompleteTable;
