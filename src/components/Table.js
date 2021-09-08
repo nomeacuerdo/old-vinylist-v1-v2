@@ -47,14 +47,21 @@ const CompleteTable = (props) => {
 
   const rows = collection.length > 0
     ? collection.map((item) => {
-      const artist = item.basic_information.artists.reduce((sum, itm) => `${sum}, ${itm.name}`, '');
+      const artist = item.basic_information.artists.length > 1
+        ? item.basic_information.artists.reduce((sum, itm) => {
+          const normalizedName = itm.name.startsWith('The ') ? `${itm.name.substring(3)} [The]` : itm.name;
+          return `${sum} ${normalizedName} ${itm.join}`;
+        }, '').trim()
+        : item.basic_information.artists[0].name;
 
       return ({
         id: item.id,
         cover: item.basic_information.thumb,
         name: item.basic_information.title,
-        artist: artist.slice(2, artist.length),
+        artist: artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist,
+        year: item.basic_information.year,
         date: item.notes ? item.notes[0].value : '',
+        formats: item.basic_information.formats,
       });
     })
     : [];
@@ -76,6 +83,31 @@ const CompleteTable = (props) => {
     }
   };
 
+  const isSevenInch = (info) => info.formats[0]?.descriptions.includes('7"');
+
+  const stupidDoubleSort = (array) => {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+
+    stabilizedThis.sort((a, b) => {
+      const first = a[0];
+      const second = b[0];
+
+      if (isSevenInch(first) > isSevenInch(second)) return 1;
+      if (isSevenInch(first) < isSevenInch(second)) return -1;
+
+      if (first[orderBy] > second[orderBy]) return 1;
+      if (first[orderBy] < second[orderBy]) return -1;
+
+      if (first.year > second.year) return 1;
+      if (first.year < second.year) return -1;
+
+      return a[1] - b[1];
+    });
+
+    return stabilizedThis.map((el) => el[0]);
+  };
+
+  // eslint-disable-next-line
   function stableSort(array, comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
@@ -96,6 +128,7 @@ const CompleteTable = (props) => {
     return 0;
   }
 
+  // eslint-disable-next-line
   function getComparator(orderS, orderByX) {
     return orderS === 'desc'
       ? (a, b) => descendingComparator(a, b, orderByX)
@@ -131,6 +164,7 @@ const CompleteTable = (props) => {
         aria-labelledby="tableTitle"
         size="medium"
         aria-label="enhanced table"
+        stickyHeader
       >
         <EnhancedTableHead
           classes={classes}
@@ -142,7 +176,9 @@ const CompleteTable = (props) => {
           rowCount={rows.length}
         />
         <TableBody>
-          {stableSort(rows, getComparator(order, orderBy))
+          { /* stableSort(rows, getComparator(order, orderBy)) */ }
+          {
+          stupidDoubleSort(rows)
             .map((row, index) => {
               const isItemSelected = isSelected(row.id);
               const labelId = `enhanced-table-checkbox-${index}`;
@@ -163,17 +199,23 @@ const CompleteTable = (props) => {
                       inputProps={{ 'aria-labelledby': labelId }}
                     />
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="left">
                     <Cover src={row.cover} alt={row.name} />
                   </TableCell>
                   <TableCell component="th" id={labelId} scope="row" padding="none">
-                    {row.name}
+                    {
+                      isSevenInch(row)
+                        ? `[7"] ${row.name}`
+                        : row.name
+                    }
                   </TableCell>
                   <TableCell>{row.artist}</TableCell>
+                  <TableCell align="center">{row.year}</TableCell>
                   <TableCell align="right">{row.date}</TableCell>
                 </TableRow>
               );
-            })}
+            })
+          }
           {rows === 0 && (
             <TableRow>
               <TableCell colSpan={6} />

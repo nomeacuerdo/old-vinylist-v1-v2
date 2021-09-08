@@ -18,7 +18,7 @@ const Container = styled.div`
 `;
 
 const Sidebar = styled.div`
-  flex-grow: 1;
+  flex-grow: 0;
   width: 100px;
 
   @media (max-width: 460px) {
@@ -29,7 +29,7 @@ const Sidebar = styled.div`
 
 const RecordList = styled.div`
   flex-grow: 2;
-  max-width: 715px;
+  // max-width: 715px;
 
   @media (min-width: 1020px) {
     max-width: auto;

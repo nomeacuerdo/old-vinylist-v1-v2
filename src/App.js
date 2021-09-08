@@ -11,6 +11,7 @@ import {
 } from './styles';
 
 const App = () => {
+  const tempArray = [];
   const [collection, setCollection] = useState([]);
   const [pagination, setPagination] = useState({});
 
@@ -19,19 +20,44 @@ const App = () => {
       Authorization: 'Discogs key=PjNgHzSjSNIULkrCsSmT, secret=zwvQZAPKYBJmNfJxzxtlUfWIbTblEkAf, token=uuIWTZNgdYAOOFhQJRokeWBrTcDsrQYMHwaPJRov',
       'user-agent': 'Spart/0.1 +https://github.com/nomeacuerdo/spart',
     },
+    // eslint-disable-next-line
   }).catch((e) => console.log(e));
 
-  const loadMore = async () => {
-    const { data } = await fetchData(pagination.urls.next);
+  // const loadMore = async () => {
+  //   const { data } = await fetchData(pagination.urls.next);
 
-    setCollection([...collection, ...data.releases]);
+  //   setCollection([...collection, ...data.releases]);
+  //   setPagination(data.pagination);
+  // };
+
+  const loadMore = async (pag) => {
+    const { data } = await fetchData(pag.urls.next);
+
+    tempArray.push(...data.releases);
+
     setPagination(data.pagination);
+
+    if (data.pagination.page < data.pagination.pages) {
+      loadMore(data.pagination);
+    } else {
+      setCollection(tempArray);
+    }
   };
+
+  // useEffect(async () => {
+  //   const { data } = await fetchData('https://api.discogs.com/users/no-me-acuerdo/collection/folders/0/releases');
+  //   setCollection(data.releases);
+  //   setPagination(data.pagination);
+  // }, []);
 
   useEffect(async () => {
     const { data } = await fetchData('https://api.discogs.com/users/no-me-acuerdo/collection/folders/0/releases');
-    setCollection(data.releases);
-    setPagination(data.pagination);
+
+    tempArray.push(...data.releases);
+
+    if (data.pagination.page < data.pagination.pages) {
+      loadMore(data.pagination);
+    }
   }, []);
 
   return (
@@ -40,6 +66,9 @@ const App = () => {
         <Logo src={Yo} alt="nomeacuerdo" />
       </Sidebar>
       <RecordList>
+        <strong>
+          {`${collection.length} items`}
+        </strong>
         <Table
           loadMore={loadMore}
           collection={collection}

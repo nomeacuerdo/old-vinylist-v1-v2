@@ -26,10 +26,11 @@ const EnhancedTableHead = (props) => {
   };
 
   const headCells = [
-    { id: 'cover', numeric: false, disablePadding: true, label: 'Cover' },
-    { id: 'name', numeric: false, disablePadding: false, label: 'Name' },
-    { id: 'artist', numeric: false, disablePadding: false, label: 'Artist' },
-    { id: 'date', numeric: true, disablePadding: false, label: 'Arrival Date' },
+    { id: 'cover', align: 'left', numeric: false, disablePadding: true, label: 'Cover' },
+    { id: 'name', align: 'left', numeric: false, disablePadding: false, label: 'Name' },
+    { id: 'artist', align: 'left', numeric: false, disablePadding: false, label: 'Artist' },
+    { id: 'year', align: 'center', numeric: true, disablePadding: false, label: 'Release Year' },
+    { id: 'date', align: 'right', numeric: true, disablePadding: false, label: 'Arrival Date' },
   ];
 
   return (
@@ -40,13 +41,13 @@ const EnhancedTableHead = (props) => {
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{ 'aria-label': 'select all desserts' }}
+            inputProps={{ 'aria-label': 'select all disks' }}
           />
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align={headCell.align}
             padding={headCell.disablePadding ? 'none' : 'default'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
