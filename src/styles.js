@@ -39,8 +39,9 @@ const RecordList = styled.div`
 `;
 
 const Logo = styled.img`
+  justify-self: flex-start;
+  flex-grow: 0;
   max-height: 100px;
-  position: fixed;
   z-index: 10;
 
   @media (max-width: ${mobileWidth}) {

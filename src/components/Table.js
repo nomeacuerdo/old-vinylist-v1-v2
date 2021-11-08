@@ -10,6 +10,7 @@ import {
   Checkbox,
   CircularProgress,
 } from '@material-ui/core';
+import { grey, blue } from '@material-ui/core/colors';
 
 import { Cover } from '../styles';
 
@@ -34,6 +35,18 @@ const useStyles = makeStyles((theme) => ({
     top: 20,
     width: 1,
   },
+  smol: {
+    backgroundColor: grey[200],
+    '&:nth-of-type(odd)': {
+      backgroundColor: grey[400],
+    },
+  },
+  swol: {
+    backgroundColor: blue[50],
+    '&:nth-of-type(odd)': {
+      backgroundColor: blue[100],
+    },
+  },
 }));
 
 const CompleteTable = (props) => {
@@ -44,33 +57,66 @@ const CompleteTable = (props) => {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('artist');
 
-  const sanitizeArtist = (artist, albumTitle) => {
-    const notTheThe = artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist;
-    const noVarious = notTheThe.startsWith('Various') ? `${albumTitle} [Various]` : notTheThe;
-    const TheSpecificEvangelionSituation = albumTitle.startsWith('Evangelion Finally') ? 'Evangelion' : noVarious;
-    const SameWithCowboyBebop = albumTitle.startsWith('Cowboy Bebop') ? 'Cowboy Bebop' : TheSpecificEvangelionSituation;
-    const andGuachimanes = albumTitle.startsWith('Watchmen') ? 'Watchmen' : SameWithCowboyBebop;
-    const TylerDurden = albumTitle.startsWith('Fight Club') ? 'Fight Club' : andGuachimanes;
-    const JarvisPepito = TylerDurden.startsWith('JARV IS') ? 'Jarvis Cocker' : TylerDurden;
+  const namingMatrix = [
+    // Style Changes
+    ['Молчат Дома = Молчат Дома', 'Molchat Doma (Молчат Дома)'],
+    ['Filter (2)', 'Filter'],
+    ['Tool (2)', 'Tool'],
+    ['Poison Idea / Pantera', 'Pantera / Poison Idea'],
+    ['Prodigy [The] Featuring Sleaford Mods', 'Prodigy [The]'],
+    // Who tf is Mock Gordon
+    ['Mick Gordon', 'Doom'],
+    ['Geinoh Yamashirogumi', 'Akira (Geinoh Yamashirogumi)'],
+    ['Yoko Takahashi , Megumi Hayashibara', 'Evangelion (Yoko Takahashi)'],
+    ['Seatbelts [The]', 'Cowboy Bebop (Seatbelts)'],
+    ['AIR Sung By Gordon Tracks', 'Air'],
+    // The artist formerly known as
+    ['JARV IS...', 'Jarvis Cocker (JARV IS...)'],
+    ['Trent Reznor And Atticus Ross', 'Watchmen'],
+    // Various Artists means nothing
+    ['Saturday Morning - Cartoons\' Greatest Hits', 'Saturday Morning (Various)'],
+    ['Jojo Rabbit Original Motion Picture Soundtrack', 'Jojo Rabbit (Various)'],
+    ['Trainspotting (Music From The Motion Picture)', 'Trainspotting (Various)'],
+    ['Rodrigo D. No Futuro', 'Rodrigo D. No Futuro (Various)'],
+    ['Dust Brothers [The]', 'Fight Club (The Dust Brothers)'],
+  ];
 
-    return JarvisPepito;
+  const stupidSpecificArtistNamingCriteria = (diskInfo, multi) => {
+    let artist = multi
+      ? diskInfo.artists.reduce((sum, itm) => {
+        const normalizedName = itm.name.startsWith('The ') ? `${itm.name.substring(3)} [The]` : itm.name;
+        return `${sum} ${normalizedName} ${itm.join}`;
+      }, '').trim()
+      : diskInfo.artists[0].name;
+
+    artist = artist.startsWith('The ') ? `${artist.substring(3)} [The]`.trim() : artist;
+
+    namingMatrix.forEach((dupla) => {
+      let returnValue = artist;
+
+      if (returnValue.startsWith('Various')) {
+        returnValue = diskInfo.title;
+      }
+
+      returnValue = (returnValue === dupla[0]) ? dupla[1] : returnValue;
+
+      artist = returnValue;
+    });
+
+    return artist;
   };
 
   const rows = collection.length > 0
     ? collection.map((item) => {
       const artist = item.basic_information.artists.length > 1
-        ? item.basic_information.artists.reduce((sum, itm) => {
-          const aitem = itm.anv !== '' ? itm.anv : itm.name;
-          const normalizedName = sanitizeArtist(aitem, item.basic_information.title);
-          return `${sum} ${normalizedName} ${itm.join}`;
-        }, '').trim()
-        : item.basic_information.artists[0].name;
+        ? stupidSpecificArtistNamingCriteria(item.basic_information, true)
+        : stupidSpecificArtistNamingCriteria(item.basic_information, false);
 
       return ({
         id: item.id,
         cover: item.basic_information.thumb,
         name: item.basic_information.title,
-        artist: sanitizeArtist(artist, item.basic_information.title),
+        artist,
         year: item.notes ? item.notes[1]?.value : '',
         date: item.notes ? item.notes[0].value : '',
         formats: item.basic_information.formats,
@@ -97,7 +143,7 @@ const CompleteTable = (props) => {
 
   const isSevenInch = (info) => info.formats[0]?.descriptions.includes('7"');
 
-  const stupidDoubleSort = (array) => {
+  const sizeCriteriaThenYearSort = (array) => {
     const stabilizedThis = array.map((el, index) => [el, index]);
 
     stabilizedThis.sort((a, b) => {
@@ -107,8 +153,13 @@ const CompleteTable = (props) => {
       if (isSevenInch(first) > isSevenInch(second)) return 1;
       if (isSevenInch(first) < isSevenInch(second)) return -1;
 
-      if (first[orderBy] > second[orderBy]) return 1;
-      if (first[orderBy] < second[orderBy]) return -1;
+      if (order === 'asc') {
+        if (first[orderBy] > second[orderBy]) return 1;
+        if (first[orderBy] < second[orderBy]) return -1;
+      } else {
+        if (first[orderBy] < second[orderBy]) return 1;
+        if (first[orderBy] > second[orderBy]) return -1;
+      }
 
       if (first.year > second.year) return 1;
       if (first.year < second.year) return -1;
@@ -201,43 +252,44 @@ const CompleteTable = (props) => {
               : null
           }
           {
-          stupidDoubleSort(rows)
-            .map((row, index) => {
-              const isItemSelected = isSelected(row.id);
-              const labelId = `enhanced-table-checkbox-${index}`;
+            sizeCriteriaThenYearSort(rows)
+              .map((row, index) => {
+                const isItemSelected = isSelected(row.id);
+                const labelId = `enhanced-table-checkbox-${index}`;
 
-              return (
-                <TableRow
-                  hover
-                  onClick={(event) => handleClick(event, row.id)}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  key={row.id}
-                  selected={isItemSelected}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isItemSelected}
-                      inputProps={{ 'aria-labelledby': labelId }}
-                    />
-                  </TableCell>
-                  <TableCell align="left">
-                    <Cover src={row.cover} alt={row.name} />
-                  </TableCell>
-                  <TableCell component="th" id={labelId} scope="row" padding="none">
-                    {
-                      isSevenInch(row)
-                        ? `[7"] ${row.name}`
-                        : row.name
-                    }
-                  </TableCell>
-                  <TableCell>{row.artist}</TableCell>
-                  <TableCell align="center">{row.year}</TableCell>
-                  <TableCell align="right">{row.date}</TableCell>
-                </TableRow>
-              );
-            })
+                return (
+                  <TableRow
+                    hover
+                    onClick={(event) => handleClick(event, row.id)}
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={row.id}
+                    selected={isItemSelected}
+                    className={isSevenInch(row) ? classes.smol : classes.swol}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isItemSelected}
+                        inputProps={{ 'aria-labelledby': labelId }}
+                      />
+                    </TableCell>
+                    <TableCell align="left">
+                      <Cover src={row.cover} alt={row.name} />
+                    </TableCell>
+                    <TableCell component="th" id={labelId} scope="row" padding="none">
+                      {
+                        isSevenInch(row)
+                          ? `[7"] ${row.name}`
+                          : row.name
+                      }
+                    </TableCell>
+                    <TableCell>{row.artist}</TableCell>
+                    <TableCell align="center">{row.year}</TableCell>
+                    <TableCell align="right">{row.date}</TableCell>
+                  </TableRow>
+                );
+              })
           }
           {rows === 0 && (
             <TableRow>
