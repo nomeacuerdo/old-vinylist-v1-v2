@@ -1,0 +1,88 @@
+<script lang="ts">
+	/** @type {import('./$types').PageData} */
+  import Navigation from "$lib/Navigation.svelte";
+  import {
+    AppShell,
+    AppBar,
+    Avatar,
+    LightSwitch,
+    initializeStores,
+    Drawer,
+    Modal,
+    getDrawerStore,
+  } from '@skeletonlabs/skeleton';
+	import '../app.postcss';
+  
+  initializeStores();
+  const drawerStore = getDrawerStore();
+
+  function drawerOpen(): void {
+    drawerStore.open({});
+  }
+
+	export let data;
+</script>
+
+<Drawer width="w-50">
+  <Navigation data={data} />
+</Drawer>
+<Modal />
+<AppShell slotSidebarLeft="bg-surface-500/5 w-0 lg:w-64">
+  <svelte:fragment slot="header">
+    <AppBar
+      gridColumns="grid-cols-8"
+      gap="gap-1"
+      slotLead="col-span-1 place-content-start"
+      slotDefault="col-span-6 place-self-center"
+      slotTrail="col-span-1 place-content-end"
+    >
+      <svelte:fragment slot="lead">
+        <button class="lg:hidden btn btn-sm mr-4" on:click={drawerOpen}>
+          <span>
+              <svg viewBox="0 0 100 80" class="fill-token w-4 h-4">
+                  <rect width="100" height="20" />
+                  <rect y="30" width="100" height="20" />
+                  <rect y="60" width="100" height="20" />
+              </svg>
+          </span>
+      </button>
+      </svelte:fragment>
+      <div class="flex">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          version="1.1"
+          x="0px"
+          y="0px"
+          viewBox="0 0 60 75"
+          xml:space="preserve"
+          class="w-16 mr-3"
+        >
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#ef4444 var(--tw-gradient-from-position);" />
+              <stop offset="100%" style="stop-color:#eab308 var(--tw-gradient-to-position);" />
+            </linearGradient>
+          </defs>
+          <path style="fill: url(#grad1);" d="M30,20.4638672c-5.2578125,0-9.5361328,4.2783203-9.5361328,9.5361328S24.7421875,39.5361328,30,39.5361328  S39.5361328,35.2578125,39.5361328,30S35.2578125,20.4638672,30,20.4638672z M30,37.5361328  c-4.1552734,0-7.5361328-3.3808594-7.5361328-7.5361328S25.8447266,22.4638672,30,22.4638672S37.5361328,25.8447266,37.5361328,30  S34.1552734,37.5361328,30,37.5361328z" />
+          <path style="fill: url(#grad1);" d="M30,26.7314453c-1.8027344,0-3.2685547,1.4658203-3.2685547,3.2685547S28.1972656,33.2685547,30,33.2685547  S33.2685547,31.8027344,33.2685547,30S31.8027344,26.7314453,30,26.7314453z M30,31.2685547  c-0.6992188,0-1.2685547-0.5693359-1.2685547-1.2685547S29.3007813,28.7314453,30,28.7314453S31.2685547,29.3007813,31.2685547,30  S30.6992188,31.2685547,30,31.2685547z" />
+          <path style="fill: url(#grad1);" d="M53.3613281,7.6240234c0.0917969-0.5449219-0.2763672-1.0605469-0.8203125-1.1523438  c-0.5556641-0.0869141-1.0615234,0.2763672-1.1523438,0.8203125l-1.5494385,9.2197266C45.5150146,10.1717529,38.236145,6,30,6  C16.7666016,6,6,16.7666016,6,30s10.7666016,24,24,24s24-10.7666016,24-24c0-3.8873291-0.9348755-7.5584106-2.5826416-10.8096313  L53.3613281,7.6240234z M52,30c0,12.1308594-9.8691406,22-22,22S8,42.1308594,8,30S17.8691406,8,30,8  c8.3358154,0,15.6034546,4.6602173,19.335022,11.5119629l-2.9190063,17.3688965l-3.5588989,2.2067261  c-0.5332642-0.9223022-1.5192261-1.5514526-2.6588745-1.5514526c-1.6992188,0-3.0820313,1.3828125-3.0820313,3.0820313  s1.3828125,3.0820313,3.0820313,3.0820313c1.4945679,0,2.7422485-1.0704346,3.0216064-2.484375l4.6346436-2.8740234  c0.2441406-0.1513672,0.4111328-0.4003906,0.4589844-0.6835938l2.4882813-14.8050537C51.5744629,25.0956421,52,27.4984131,52,30z   M41.2802734,40.6181641c0,0.5966797-0.4853516,1.0820313-1.0820313,1.0820313s-1.0820313-0.4853516-1.0820313-1.0820313  s0.4853516-1.0820313,1.0820313-1.0820313S41.2802734,40.0214844,41.2802734,40.6181641z" />
+        </svg>
+        <h1 class="h1">
+          <span class="bg-gradient-to-br from-red-500 to-yellow-500 bg-clip-text text-transparent box-decoration-clone">
+            nomeacuerdo records
+          </span>
+        </h1>
+      </div>
+      <svelte:fragment slot="trail">
+        <LightSwitch />
+      </svelte:fragment>
+    </AppBar>
+  </svelte:fragment>
+
+  <svelte:fragment slot="sidebarLeft">
+    <Navigation data={data} />
+  </svelte:fragment>
+
+<slot />
+</AppShell>

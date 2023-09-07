@@ -1,2 +1,7 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<div class="container mx-auto p-8 space-y-8">
+  <h1>Discos</h1>
+</div>
+
+<svelte:head>
+  <title>nomeacuerdo records</title>
+</svelte:head>
