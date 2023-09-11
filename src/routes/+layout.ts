@@ -6,9 +6,11 @@ import {
   AUTH_TOKEN,
 } from '../constants';
 
+export const prerender = true;
+export const trailingSlash = 'always';
+
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, setHeaders }) {
-  const id = params.id ? params.id : 0;
+export async function load({ fetch }) {
   const response = await fetch(`${URL}/users/${USERNAME}/collection/folders`, {
     method: 'GET',
     headers: {

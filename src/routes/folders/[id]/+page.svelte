@@ -8,33 +8,39 @@
     AUTH_TOKEN,
   } from '../../../constants';
   import { tableDataFormatter } from '$lib/utils/utils';
-  import { getModalStore, Table, Paginator, tableMapperValues } from '@skeletonlabs/skeleton';
-  import type { ModalSettings, PaginationSettings, TableSource } from '@skeletonlabs/skeleton';
+  import RecordTable from '$lib/RecordTable.svelte';
+  import { getModalStore, Paginator, tableMapperValues } from '@skeletonlabs/skeleton';
+  // import type { ModalSettings, PaginationSettings } from '@skeletonlabs/skeleton';
+  // import type { SourceData, SortFunctionTypes, SortByTypes } from "../../../types";
   export let data;
 
   const formattedData = data.collectionData.releases.map(tableDataFormatter);
   const id = data.id;
   let page = 1;
   let per_page = 50;
+  // let sort_by: SortByTypes = { col: 'artist', sort_order: 'asc' };
+  let sort_by = { col: 'artist', sort_order: 'asc' };
+  // let loading: boolean = formattedData.length === 0;
+  let loading = formattedData.length === 0;
 
-  export let tableData: TableSource = {
-    // A list of heading labels.
+  // export let tableData: SourceData = {
+  export let tableData = {
     head: [
-      '',
-      '<button type="button" class="btn variant-soft"><span></span><span>Name</span></button>',
-      '<button type="button" class="btn bg-gradient-to-br variant-gradient-warning-error"><span><i class="fa-solid fa-circle-down"></i></span><span>Artist</span></button>',
-      '<button type="button" class="btn variant-soft"><span></span><span>Released</span></button>',
-      '<button type="button" class="btn variant-soft"><span></span><span>Acquired</span></button>',
+      { field: 'cover' },
+      { field: "title", title: "Name" },
+      { field: "artist", title: "Artist" },
+      { title: "Year" },
+      { title: "Acquired" },
     ],
-    // The data visibly shown in your table body UI.
     body: tableMapperValues(formattedData, ['cover', 'name', 'artist', 'released', 'acquired']),
     meta: tableMapperValues(formattedData, ['id', 'artist', 'name', 'image', 'cover']),
-    foot: ['', '', '', 'Total', `<code class="code">${formattedData.length}</code>`]
   };
   
-  const handleRowClick = (e: CustomEvent) => {
+  // const handleRowClick = (e: CustomEvent) => {
+  const handleRowClick = (e) => {
     const modalStore = getModalStore();
-    const modal: ModalSettings = {
+    // const modal: ModalSettings = {
+    const modal = {
       type: 'alert',
       title: `${e.detail[1]} - ${e.detail[2]}`,
       buttonTextCancel: 'Close',
@@ -48,9 +54,10 @@
     limit: per_page,
     size: data.collectionData.pagination.items,
     amounts: [10,25,50],
-  } satisfies PaginationSettings;
+  };
+  //} satisfies PaginationSettings;
 
-  const fetchData = () => fetch(`${URL}/users/${USERNAME}/collection/folders/${id}/releases?sort=artist&per_page=${per_page}&page=${page}`, {
+  const fetchData = () => fetch(`${URL}/users/${USERNAME}/collection/folders/${id}/releases?sort=${sort_by.col}&sort_order=${sort_by.sort_order}&per_page=${per_page}&page=${page}`, {
     method: 'GET',
     headers: {
       Authorization: `Discogs key=${AUTH_KEY}, secret=${AUTH_SECRET}, token=${AUTH_TOKEN}`,
@@ -58,7 +65,9 @@
     }
   });
 
-  const handlePagination = async (e: CustomEvent) => {
+  // const handlePagination = async (e: CustomEvent) => {
+  const handlePagination = async (e) => {
+    loading = true;
     page = e.detail + 1;
     const collectionRes = await fetchData();
     const fetchedData = await collectionRes.json();
@@ -66,8 +75,12 @@
     tableData.body = tableMapperValues(readyData, ['cover', 'name', 'artist', 'released', 'acquired']);
     tableData.meta = tableMapperValues(readyData, ['id', 'artist', 'name', 'image', 'cover']);
     paginationSettings.page = fetchedData.pagination.page - 1;
+    loading = false;
   };
-  const handleAmount = async (e: CustomEvent) => {
+
+  // const handleAmount = async (e: CustomEvent) => {
+  const handleAmount = async (e) => {
+    loading = true;
     per_page = e.detail;
     const collectionRes = await fetchData();
     const fetchedData = await collectionRes.json();
@@ -75,11 +88,31 @@
     tableData.body = tableMapperValues(readyData, ['cover', 'name', 'artist', 'released', 'acquired']);
     tableData.meta = tableMapperValues(readyData, ['id', 'artist', 'name', 'image', 'cover']);
     paginationSettings.limit = per_page;
+    loading = false;
+  };
+
+  // const handleSort: SortFunctionTypes = async (sortBy: SortByTypes) => {
+  const handleSort = async (sortBy) => {
+    loading = true;
+    sort_by = sortBy;
+    page = 1;
+    const collectionRes = await fetchData();
+    const fetchedData = await collectionRes.json();
+    const readyData = fetchedData.releases.map(tableDataFormatter);
+    tableData.body = tableMapperValues(readyData, ['cover', 'name', 'artist', 'released', 'acquired']);
+    tableData.meta = tableMapperValues(readyData, ['id', 'artist', 'name', 'image', 'cover']);
+    loading = false;
   };
 </script>
 
 <div class="container mx-auto p-8 space-y-8">
-  <Table source={tableData} interactive on:selected={handleRowClick} />
+  <RecordTable
+    source={tableData}
+    on:selected={handleRowClick}
+    handleSort={handleSort}
+    loading={loading}
+    sortable
+  />
   <Paginator
     bind:settings={paginationSettings}
     on:page={handlePagination}

@@ -22,9 +22,9 @@ const namingMatrix = [
   ['Dust Brothers [The]', 'Fight Club (The Dust Brothers)'],
 ];
 
-export const stupidSpecificArtistNamingCriteria = (diskInfo, multi) => {
+export const stupidSpecificArtistNamingCriteria = (diskInfo: any, multi: any) => {
   let artist = multi
-    ? diskInfo.artists.reduce((sum, itm) => {
+    ? diskInfo.artists.reduce((sum: any, itm: any) => {
       const normalizedName = itm.name.startsWith('The ') ? `${itm.name.substring(3)} [The]` : itm.name;
       return `${sum} ${normalizedName} ${itm.join}`;
     }, '').trim()
@@ -58,7 +58,22 @@ export const tableDataFormatter = (item: any) => {
     image: item.basic_information.cover_image,
     name: item.basic_information.title,
     artist,
-    released: item.notes ? item.notes[1]?.value : '',
-    acquired: item.notes ? item.notes[0].value : '',
+    released: item.notes ? item.notes.filter((item: any) => item.field_id === 2)[0]?.value : '',
+    acquired: item.notes ? item.notes.filter((item: any) => item.field_id === 1)[0]?.value : '',
+  }
+}
+
+export const wishlistDataFormatter = (item: any, page: number, i: number) => {
+  const artist = item.basic_information.artists.length > 1
+      ? stupidSpecificArtistNamingCriteria(item.basic_information, true)
+      : stupidSpecificArtistNamingCriteria(item.basic_information, false);
+
+  return {
+    id: item.id,
+    number: i + page + 1,
+    cover: `<img src="${item.basic_information.cover_image}" class="w-16 rounded-sm" />`,
+    image: item.basic_information.cover_image,
+    name: item.basic_information.title,
+    artist,
   }
 }

@@ -2,7 +2,8 @@
 	/** @type {import('./$types').PageData} */
   import { page } from '$app/stores';
   
-  $: classesActive = (href: string) => (href === $page.url.pathname ? 'variant-ghost-warning' : '');
+  // $: classesActive = (href: string) => (href === $page.url.pathname ? 'variant-ghost-warning' : '');
+  $: classesActive = (href) => (href === $page.url.pathname ? 'variant-ghost-warning' : '');
 
 	export let data;
 </script>

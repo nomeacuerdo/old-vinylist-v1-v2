@@ -4,7 +4,6 @@
   import {
     AppShell,
     AppBar,
-    Avatar,
     LightSwitch,
     initializeStores,
     Drawer,
@@ -16,7 +15,7 @@
   initializeStores();
   const drawerStore = getDrawerStore();
 
-  function drawerOpen(): void {
+  export const drawerOpen = () => {
     drawerStore.open({});
   }
 
